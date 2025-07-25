@@ -8,7 +8,7 @@ import { timingSafeEqual } from 'crypto';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Model } from 'mongoose';
-import { AuthEngine } from './cores/AuthEngine.js';
+import { AuthEngine } from './core/AuthEngine.js';
 import { AuthServiceOptions } from './types/authTypes.js';
 import { ISignin, ISignup, IVerifyEmail } from './types/global.js';
 
