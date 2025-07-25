@@ -1,25 +1,42 @@
-import { ApiError, globalErrorHandler } from '@server/middleware';
+import { config } from '@server/config';
+import { ApiError, globalErrorHandler, rateLimiter } from '@server/middleware';
 import { HttpStatusCode } from '@server/utils';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 import proxy from 'express-http-proxy';
-import * as path from 'path';
+import useragent from 'express-useragent';
+import helmet from 'helmet';
+import morgan from 'morgan';
 
 const app = express();
 
+// Development logging
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
 // Proxy middleware
 app.set('trust proxy', 1);
+
+// Set security-related HTTP headers
+app.use(helmet());
+
+// Apply the rate limiting middleware to all requests.
+app.use(rateLimiter());
 
 // Parse request bodies
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
-// Parse cookies
-app.use(cookieParser('White cat'));
+// Get user device info
+app.use(useragent.express());
 
-// Configure Cross-Origin Resource Sharing (CORS).
+// Parse cookies
+app.use(cookieParser(config.COOKIE_SECRET));
+
+// Configure Cross-Origin Resource Sharing (CORS)
 app.use(
   cors({
     origin: ['http://localhost:3001'],
@@ -28,8 +45,6 @@ app.use(
     optionsSuccessStatus: 200,
   })
 );
-
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.get('/health', (req, res) => {
   res.send({ message: 'Welcome to gateway!' });
