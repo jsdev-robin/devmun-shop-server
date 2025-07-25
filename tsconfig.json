@@ -29,6 +29,12 @@
     },
     {
       "path": "./libs/security"
+    },
+    {
+      "path": "./apps/order-e2e"
+    },
+    {
+      "path": "./apps/order"
     }
   ]
 }

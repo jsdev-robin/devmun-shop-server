@@ -33,11 +33,17 @@ export class SendEmail {
         to: this.data.user.email,
         subject: subject,
         html: await ejs.renderFile(
-          path.join(
-            process.cwd(),
-            '/libs/email/src/lib/views/emails',
-            `${template}.ejs`
-          ),
+          process.env.NODE_ENV !== 'production'
+            ? path.join(
+                process.cwd(),
+                'libs/email/src/lib/views/emails',
+                `${template}.ejs`
+              )
+            : path.join(
+                __dirname,
+                'libs/email/views/emails',
+                `${template}.ejs`
+              ),
           {
             data: { ...this.data },
             subject,

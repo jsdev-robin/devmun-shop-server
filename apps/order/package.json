@@ -1,5 +1,5 @@
 {
-  "name": "@server/auth",
+  "name": "@server/order",
   "version": "0.0.1",
   "private": true,
   "nx": {
@@ -12,27 +12,16 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@server/auth:build",
+          "buildTarget": "@server/order:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@server/auth:build:development"
+            "buildTarget": "@server/order:build:development"
           },
           "production": {
-            "buildTarget": "@server/auth:build:production"
+            "buildTarget": "@server/order:build:production"
           }
-        }
-      },
-      "build": {
-        "options": {
-          "assets": [
-            {
-              "input": "../../libs/email/src/lib/views",
-              "glob": "**/*",
-              "output": "libs/email/views"
-            }
-          ]
         }
       },
       "test": {
