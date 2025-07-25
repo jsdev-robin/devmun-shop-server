@@ -14,6 +14,15 @@
     },
     {
       "path": "./apps/auth"
+    },
+    {
+      "path": "./libs/utils"
+    },
+    {
+      "path": "./libs/config"
+    },
+    {
+      "path": "./libs/middleware"
     }
   ]
 }

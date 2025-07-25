@@ -29,7 +29,8 @@
           "buildDepsName": "build-deps",
           "watchDepsName": "watch-deps"
         }
-      }
+      },
+      "exclude": ["libs/utils/*", "libs/config/*", "libs/middleware/*"]
     },
     {
       "plugin": "@nx/webpack/plugin",
@@ -53,11 +54,25 @@
         "targetName": "test"
       },
       "exclude": ["apps/gateway-e2e/**/*", "apps/auth-e2e/**/*"]
+    },
+    {
+      "plugin": "@nx/js/typescript",
+      "include": ["libs/utils/*", "libs/config/*", "libs/middleware/*"],
+      "options": {
+        "typecheck": {
+          "targetName": "typecheck"
+        }
+      }
     }
   ],
   "targetDefaults": {
     "test": {
       "dependsOn": ["^build"]
+    },
+    "serve": {
+      "options": {
+        "inspect": false
+      }
     }
   }
 }
