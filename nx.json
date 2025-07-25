@@ -30,7 +30,13 @@
           "watchDepsName": "watch-deps"
         }
       },
-      "exclude": ["libs/utils/*", "libs/config/*", "libs/middleware/*"]
+      "exclude": [
+        "libs/utils/*",
+        "libs/config/*",
+        "libs/middleware/*",
+        "libs/email/*",
+        "libs/security/*"
+      ]
     },
     {
       "plugin": "@nx/webpack/plugin",
@@ -57,7 +63,13 @@
     },
     {
       "plugin": "@nx/js/typescript",
-      "include": ["libs/utils/*", "libs/config/*", "libs/middleware/*"],
+      "include": [
+        "libs/utils/*",
+        "libs/config/*",
+        "libs/middleware/*",
+        "libs/email/*",
+        "libs/security/*"
+      ],
       "options": {
         "typecheck": {
           "targetName": "typecheck"

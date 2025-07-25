@@ -79,8 +79,10 @@ async function gracefulShutdown(server: http.Server, signal: string) {
   }
 })();
 
-httpServer.listen(Number(8001), () => {
-  console.log(`🚀 Server running on port ${8001} in ${config.NODE_ENV}`);
+httpServer.listen(Number(config.AUTH_PORT), () => {
+  console.log(
+    `🚀 Auth server is running on port ${config.AUTH_PORT} in ${config.NODE_ENV}`
+  );
 });
 
 // Graceful shutdown on termination signals

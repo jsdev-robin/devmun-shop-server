@@ -8,6 +8,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import useragent from 'express-useragent';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import authRouterHub from './routes/authRouteHub';
 
 const app = express();
 
@@ -45,9 +46,12 @@ app.use(
   })
 );
 
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
   res.send({ message: 'Welcome to auth!' });
 });
+
+// Shop route
+app.use('/v1/hub/auth', authRouterHub);
 
 // Handle 404 errors
 app.all(/(.*)/, (req: Request, res: Response, next: NextFunction) => {

@@ -4,13 +4,19 @@
   "include": [],
   "references": [
     {
-      "path": "../../libs/config"
+      "path": "../../libs/security"
+    },
+    {
+      "path": "../../libs/email"
     },
     {
       "path": "../../libs/utils"
     },
     {
       "path": "../../libs/middleware"
+    },
+    {
+      "path": "../../libs/config"
     },
     {
       "path": "./tsconfig.app.json"

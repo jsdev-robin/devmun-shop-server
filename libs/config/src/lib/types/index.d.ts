@@ -2,6 +2,8 @@ export interface ProcessEnv {
   // Server
   NODE_ENV: 'development' | 'production';
   PORT: number;
+  GATEWAY_PORT: number;
+  AUTH_PORT: number;
 
   // Database
   DATABASE_ONLINE: string;

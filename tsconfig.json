@@ -23,6 +23,12 @@
     },
     {
       "path": "./libs/middleware"
+    },
+    {
+      "path": "./libs/email"
+    },
+    {
+      "path": "./libs/security"
     }
   ]
 }

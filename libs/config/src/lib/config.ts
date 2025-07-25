@@ -7,6 +7,8 @@ function validateEnvVariables(env: ProcessEnv): void {
   const requiredVars: Array<keyof ProcessEnv> = [
     'NODE_ENV',
     'PORT',
+    'GATEWAY_PORT',
+    'AUTH_PORT',
 
     'DATABASE_ONLINE',
     'DATABASE_PASSWORD_ONLINE',
@@ -71,6 +73,8 @@ validateEnvVariables(env);
 const {
   NODE_ENV = 'development',
   PORT = '8080',
+  GATEWAY_PORT = '8000',
+  AUTH_PORT = '8001',
 
   DATABASE_ONLINE = '',
   DATABASE_PASSWORD_ONLINE = '',
@@ -127,6 +131,8 @@ const DB = ISPRODUCTION
 export const config = {
   NODE_ENV,
   PORT,
+  GATEWAY_PORT,
+  AUTH_PORT,
 
   DATABASE_ONLINE,
   DATABASE_PASSWORD_ONLINE,
