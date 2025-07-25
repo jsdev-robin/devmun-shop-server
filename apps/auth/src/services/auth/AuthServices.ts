@@ -3,12 +3,18 @@ import { SendEmail } from '@server/email';
 import { ApiError } from '@server/middleware';
 import { Crypto, Decipheriv } from '@server/security';
 import { catchAsync, HttpStatusCode, Status } from '@server/utils';
+import { timingSafeEqual } from 'crypto';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Model } from 'mongoose';
 import { IUser, UserRole } from '../../types/user';
 import { AuthEngine } from './particles/AuthEngine';
-import { AuthServiceOptions, ISignup, IVerifyEmail } from './types/authTypes';
+import {
+  AuthServiceOptions,
+  ISignin,
+  ISignup,
+  IVerifyEmail,
+} from './types/authTypes';
 
 export class AuthServices<T extends IUser> extends AuthEngine {
   private readonly model: Model<T>;
@@ -121,8 +127,13 @@ export class AuthServices<T extends IUser> extends AuthEngine {
           solidOTP: string;
         }>(encrypted, config.CRYPTO_SECRET);
 
+      const aBuf = Buffer.from(String(solidOTP));
+      const bBuf = Buffer.from(String(otp));
+
+      const correctOTP = timingSafeEqual(aBuf, bBuf);
+
       // Compare provided OTP with the decrypted solidOTP
-      if (Number(solidOTP) !== Number(otp)) {
+      if (!correctOTP) {
         return next(
           new ApiError(
             'The OTP you entered does not match. Please double-check the code and try again.',
@@ -149,6 +160,43 @@ export class AuthServices<T extends IUser> extends AuthEngine {
         status: Status.SUCCESS,
         message: 'Your account has been successfully verified.',
       });
+    }
+  );
+
+  public signin = catchAsync(
+    async (
+      req: Request<Record<string, string>, unknown, ISignin>,
+      res: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      // Extract login fields from request body
+      const { email, password, remember } = req.body;
+
+      // Look up user by email, including password
+      const user = await this.model
+        .findOne({ email })
+        .select('+password')
+        .exec();
+
+      // Validate user existence and password
+      if (!user || !(await user.isPasswordValid(password))) {
+        return next(
+          new ApiError(
+            'Incorrect email or password. Please check your credentials and try again.',
+            HttpStatusCode.UNAUTHORIZED
+          )
+        );
+      }
+
+      // Remove sensitive password field before continuing
+      user.password = undefined;
+
+      // Attach authenticated user and session preference to request object
+      req.self = user;
+      req.remember = remember;
+
+      // Proceed to the next middleware (e.g., session/token generation)
+      next();
     }
   );
 }
