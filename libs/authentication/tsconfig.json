@@ -4,22 +4,25 @@
   "include": [],
   "references": [
     {
-      "path": "../../libs/models"
+      "path": "../utils"
     },
     {
-      "path": "../../libs/authentication"
+      "path": "../security"
     },
     {
-      "path": "../../libs/utils"
+      "path": "../models"
     },
     {
-      "path": "../../libs/middleware"
+      "path": "../middleware"
     },
     {
-      "path": "../../libs/config"
+      "path": "../email"
     },
     {
-      "path": "./tsconfig.app.json"
+      "path": "../config"
+    },
+    {
+      "path": "./tsconfig.lib.json"
     },
     {
       "path": "./tsconfig.spec.json"

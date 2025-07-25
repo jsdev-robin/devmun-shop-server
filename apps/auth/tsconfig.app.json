@@ -19,10 +19,10 @@
   ],
   "references": [
     {
-      "path": "../../libs/security/tsconfig.lib.json"
+      "path": "../../libs/models/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/email/tsconfig.lib.json"
+      "path": "../../libs/authentication/tsconfig.lib.json"
     },
     {
       "path": "../../libs/utils/tsconfig.lib.json"

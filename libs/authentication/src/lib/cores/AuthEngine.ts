@@ -5,7 +5,7 @@ import { HttpStatusCode } from '@server/utils';
 import { randomInt } from 'crypto';
 import { Request } from 'express';
 import jwt from 'jsonwebtoken';
-import { TokenService } from './TokenService';
+import { TokenService } from './TokenService.js';
 
 export class AuthEngine extends TokenService {
   protected creatOtp = async (

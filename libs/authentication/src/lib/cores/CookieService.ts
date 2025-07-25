@@ -1,6 +1,6 @@
 import { config } from '@server/config';
 import { CookieOptions } from 'express';
-import { IAuthCookies } from '../types/authTypes';
+import { IAuthCookies } from '../types/authTypes.js';
 
 export const accessTTL: number = parseInt(
   config.ACCESS_TOKEN_EXPIRE ?? '30',

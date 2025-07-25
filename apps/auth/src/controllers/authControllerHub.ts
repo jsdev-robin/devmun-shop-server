@@ -1,13 +1,12 @@
-import { Seller } from '../models/userSchema';
-import AuthServices from '../services/auth/AuthServices';
 import {
   accessCookieExp,
+  Authentication,
+  AuthServiceOptions,
   cookieOptions,
   enableSignature,
   refreshCookieExp,
-} from '../services/auth/particles/CookieService';
-import { AuthServiceOptions } from '../services/auth/types/authTypes';
-import { IUser } from '../types/user';
+} from '@server/authentication';
+import { IUser, Seller } from '@server/models';
 
 const options: AuthServiceOptions<IUser> = {
   model: Seller,
@@ -29,6 +28,6 @@ const options: AuthServiceOptions<IUser> = {
   role: 'seller',
 };
 
-const authControllerHub = new AuthServices<IUser>(options);
+const authControllerHub = new Authentication<IUser>(options);
 
 export default authControllerHub;

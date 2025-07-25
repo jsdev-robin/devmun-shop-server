@@ -1,6 +1,6 @@
-import { UserRole } from '../../../types/user';
-import { IAuthCookies } from '../types/authTypes';
-import { CookieService } from './CookieService';
+import { UserRole } from '@server/models';
+import { IAuthCookies } from '../types/authTypes.js';
+import { CookieService } from './CookieService.js';
 
 export interface TokenSignature {
   ip: string;

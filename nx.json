@@ -35,7 +35,9 @@
         "libs/config/*",
         "libs/middleware/*",
         "libs/email/*",
-        "libs/security/*"
+        "libs/security/*",
+        "libs/authentication/*",
+        "libs/models/*"
       ]
     },
     {
@@ -72,7 +74,9 @@
         "libs/config/*",
         "libs/middleware/*",
         "libs/email/*",
-        "libs/security/*"
+        "libs/security/*",
+        "libs/authentication/*",
+        "libs/models/*"
       ],
       "options": {
         "typecheck": {

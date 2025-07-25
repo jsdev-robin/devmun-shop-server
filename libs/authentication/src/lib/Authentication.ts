@@ -1,22 +1,18 @@
 import { config } from '@server/config';
 import { SendEmail } from '@server/email';
 import { ApiError } from '@server/middleware';
+import { IUser, UserRole } from '@server/models';
 import { Crypto, Decipheriv } from '@server/security';
 import { catchAsync, HttpStatusCode, Status } from '@server/utils';
 import { timingSafeEqual } from 'crypto';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Model } from 'mongoose';
-import { IUser, UserRole } from '../../types/user';
-import { AuthEngine } from './particles/AuthEngine';
-import {
-  AuthServiceOptions,
-  ISignin,
-  ISignup,
-  IVerifyEmail,
-} from './types/authTypes';
+import { AuthEngine } from './cores/AuthEngine.js';
+import { AuthServiceOptions } from './types/authTypes.js';
+import { ISignin, ISignup, IVerifyEmail } from './types/global.js';
 
-export class AuthServices<T extends IUser> extends AuthEngine {
+export class Authentication<T extends IUser> extends AuthEngine {
   private readonly model: Model<T>;
   private readonly role: UserRole;
 
@@ -200,5 +196,3 @@ export class AuthServices<T extends IUser> extends AuthEngine {
     }
   );
 }
-
-export default AuthServices;

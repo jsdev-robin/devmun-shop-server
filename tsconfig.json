@@ -35,6 +35,12 @@
     },
     {
       "path": "./apps/order"
+    },
+    {
+      "path": "./libs/authentication"
+    },
+    {
+      "path": "./libs/models"
     }
   ]
 }
