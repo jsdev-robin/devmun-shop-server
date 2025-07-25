@@ -17,4 +17,16 @@ router.post(
   authControllerHub.signup
 );
 
+router.post(
+  '/verify-email',
+  rateLimiter({
+    max: 5,
+    message:
+      'Too many email verification attempts detected. Please wait 15 minutes before trying again.',
+  }),
+  authSchema.verifyEmail,
+  runSchema,
+  authControllerHub.verifyEmail
+);
+
 export default router;

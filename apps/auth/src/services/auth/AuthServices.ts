@@ -1,11 +1,14 @@
+import { config } from '@server/config';
 import { SendEmail } from '@server/email';
 import { ApiError } from '@server/middleware';
+import { Crypto, Decipheriv } from '@server/security';
 import { catchAsync, HttpStatusCode, Status } from '@server/utils';
 import { NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { Model } from 'mongoose';
 import { IUser, UserRole } from '../../types/user';
 import { AuthEngine } from './particles/AuthEngine';
-import { AuthServiceOptions, ISignup } from './types/authTypes';
+import { AuthServiceOptions, ISignup, IVerifyEmail } from './types/authTypes';
 
 export class AuthServices<T extends IUser> extends AuthEngine {
   private readonly model: Model<T>;
@@ -90,6 +93,62 @@ export class AuthServices<T extends IUser> extends AuthEngine {
             )
           );
         });
+    }
+  );
+
+  public verifyEmail = catchAsync(
+    async (
+      req: Request<Record<string, string>, unknown, IVerifyEmail>,
+      res: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      // Destructure OTP and token from request body
+      const { otp, token } = req.body;
+
+      // Verify JWT token and extract the encrypted payload
+      const { encrypted } = jwt.verify(token, config.ACTIVATION_SECRET) as {
+        encrypted: Decipheriv;
+      };
+
+      // Decrypt the encrypted payload to retrieve user information
+      const { firstName, lastName, email, normalizeMail, password, solidOTP } =
+        await Crypto.decipheriv<{
+          firstName: string;
+          lastName: string;
+          email: string;
+          normalizeMail: string;
+          password: string;
+          solidOTP: string;
+        }>(encrypted, config.CRYPTO_SECRET);
+
+      // Compare provided OTP with the decrypted solidOTP
+      if (Number(solidOTP) !== Number(otp)) {
+        return next(
+          new ApiError(
+            'The OTP you entered does not match. Please double-check the code and try again.',
+            HttpStatusCode.BAD_REQUEST
+          )
+        );
+      }
+
+      // Construct the user payload including email verification log
+      const payload = {
+        firstName,
+        lastName,
+        email: email,
+        normalizeMail: normalizeMail,
+        password: password,
+        role: this.role,
+      };
+
+      // Create a new user record if OTP matches
+      await this.model.create(payload);
+
+      // Respond with a success message
+      res.status(HttpStatusCode.CREATED).json({
+        status: Status.SUCCESS,
+        message: 'Your account has been successfully verified.',
+      });
     }
   );
 }
