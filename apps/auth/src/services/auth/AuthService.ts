@@ -288,6 +288,23 @@ export class AuthService<T extends IUser> extends AuthEngine {
     }
   );
 
+  public signout = catchAsync(
+    async (req: Request, res: Response): Promise<void> => {
+      const accessToken = req.signedCookies[this.getAccessCookieConfig().name];
+      const user = req.self;
+
+      await this.removeASession(res, this.model, {
+        id: user._id,
+        token: Crypto.hmac(accessToken),
+      });
+
+      res.status(HttpStatusCode.OK).json({
+        status: Status.SUCCESS,
+        message: 'You have been successfully signed out.',
+      });
+    }
+  );
+
   // ================== Manage user information ==================
   public getProfile = catchAsync(
     async (req: Request, res: Response): Promise<void> => {
