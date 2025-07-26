@@ -1,8 +1,19 @@
-import { UserRole } from '@server/models';
+/* eslint-disable @typescript-eslint/no-namespace */
+import { IUser, UserRole } from '@server/models';
 import { CookieOptions } from 'express';
 import { Model } from 'mongoose';
 
-export interface ICookieMeta {
+declare global {
+  namespace Express {
+    interface Request {
+      self: IUser;
+      remember: boolean;
+      redirect: string;
+    }
+  }
+}
+
+export interface CookieMeta {
   name: string;
   TTL: {
     expires: Date;
@@ -12,12 +23,11 @@ export interface ICookieMeta {
 }
 
 export interface IAuthCookies {
-  access: ICookieMeta;
-  refresh: ICookieMeta;
+  access: CookieMeta;
+  refresh: CookieMeta;
 }
 
 export interface AuthServiceOptions<T> {
   model: Model<T>;
-  cookies: IAuthCookies;
   role: UserRole;
 }

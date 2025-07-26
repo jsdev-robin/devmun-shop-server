@@ -1,5 +1,4 @@
 import { UserRole } from '@server/models';
-import { IAuthCookies } from '../types/authTypes.js';
 import { CookieService } from './CookieService.js';
 
 export interface TokenSignature {
@@ -12,8 +11,4 @@ export interface TokenSignature {
   token: string;
 }
 
-export class TokenService extends CookieService {
-  constructor(options: { cookies: IAuthCookies }) {
-    super(options);
-  }
-}
+export class TokenService extends CookieService {}

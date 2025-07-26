@@ -4,19 +4,16 @@
   "include": [],
   "references": [
     {
+      "path": "../models"
+    },
+    {
       "path": "../utils"
     },
     {
       "path": "../security"
     },
     {
-      "path": "../models"
-    },
-    {
       "path": "../middleware"
-    },
-    {
-      "path": "../email"
     },
     {
       "path": "../config"

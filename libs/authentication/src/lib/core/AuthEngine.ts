@@ -23,8 +23,6 @@ export class AuthEngine extends TokenService {
           ...data,
           solidOTP,
           ip: req.ip,
-          browser: req.useragent?.browser,
-          device: req.useragent?.os,
         },
         config.CRYPTO_SECRET
       );
