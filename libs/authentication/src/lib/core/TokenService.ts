@@ -3,6 +3,7 @@ import { ApiError } from '@server/middleware';
 import { UserRole } from '@server/models';
 import { Crypto } from '@server/security';
 import { HttpStatusCode } from '@server/utils';
+import { timingSafeEqual } from 'crypto';
 import { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
@@ -30,6 +31,27 @@ export class TokenService extends CookieService {
       browser: Crypto.hmac(String(req.useragent?.browser)),
       device: Crypto.hmac(String(req.useragent?.os)),
     };
+  }
+
+  protected checkTokenSignature(
+    decoded: TokenSignature | null,
+    req: Request
+  ): boolean {
+    if (!decoded) return true;
+
+    const compare = (a: string, b: string): boolean => {
+      const aBuf = Buffer.from(a);
+      const bBuf = Buffer.from(b);
+
+      if (aBuf.length !== bBuf.length) return false;
+      return timingSafeEqual(aBuf, bBuf);
+    };
+
+    return (
+      // !compare(decoded.ip, Crypto.hmac(String(req.ip))) ||
+      !compare(decoded.device, Crypto.hmac(String(req.useragent?.os))) ||
+      !compare(decoded.browser, Crypto.hmac(String(req.useragent?.browser)))
+    );
   }
 
   protected rotateToken = (

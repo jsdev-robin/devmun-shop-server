@@ -3,7 +3,7 @@ import { ApiError } from '@server/middleware';
 import { Crypto } from '@server/security';
 import { HttpStatusCode } from '@server/utils';
 import { randomInt } from 'crypto';
-import { Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Model } from 'mongoose';
 import { ACCESS_TTL, REFRESH_TTL } from './CookieService.js';
@@ -129,7 +129,7 @@ export class AuthEngine extends TokenService {
 
         // MongoDB operations
         Model.findByIdAndUpdate(
-          id,
+          { _id: id },
           {
             $push: {
               sessions: {
@@ -149,5 +149,15 @@ export class AuthEngine extends TokenService {
         HttpStatusCode.INTERNAL_SERVER_ERROR
       );
     }
+  };
+
+  protected sessionUnauthorized = (res: Response, next: NextFunction) => {
+    this.clearAllCookies(res);
+    return next(
+      new ApiError(
+        'Your session has expired or is no longer available. Please log in again to continue.',
+        HttpStatusCode.UNAUTHORIZED
+      )
+    );
   };
 }
