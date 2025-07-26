@@ -1,7 +1,7 @@
 import { config } from '@server/config';
 import { ApiError } from '@server/middleware';
 import { HttpStatusCode } from '@server/utils';
-import { CookieOptions } from 'express';
+import { CookieOptions, Response } from 'express';
 
 export const ACCESS_TTL: number = parseInt(
   config.ACCESS_TOKEN_EXPIRE ?? '30',
@@ -37,8 +37,8 @@ export const COOKIE_OPTIONS: CookieOptions = {
   domain: config.ISPRODUCTION ? '.devmun.xyz' : 'localhost',
 };
 
-export const ACCESS_COOKIE_NAME = '__Secure-gk_9sLrTf2sa';
-export const REFRESH_COOKIE_NAME = '__Host-qX_sr2pR8dK';
+export const ACCESS_COOKIE_NAME = '__secure-gk_9sLrTf2sa';
+export const REFRESH_COOKIE_NAME = '__host-qX_sr2pR8dK';
 
 export class CookieService {
   protected getAccessCookieConfig = () => {
@@ -95,5 +95,34 @@ export class CookieService {
         HttpStatusCode.INTERNAL_SERVER_ERROR
       );
     }
+  };
+
+  protected clearCookie = (
+    res: Response,
+    name: string,
+    options: CookieOptions
+  ) => {
+    return res.clearCookie(name, options);
+  };
+
+  protected clearAccessCookie = (res: Response): void => {
+    this.clearCookie(
+      res,
+      this.getAccessCookieConfig().name,
+      this.getAccessCookieConfig().options
+    );
+  };
+
+  protected clearRefreshCookie = (res: Response): void => {
+    this.clearCookie(
+      res,
+      this.getRefreshCookieConfig().name,
+      this.getRefreshCookieConfig().options
+    );
+  };
+
+  protected clearAllCookies = (res: Response): void => {
+    this.clearAccessCookie(res);
+    this.clearRefreshCookie(res);
   };
 }

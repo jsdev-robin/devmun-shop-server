@@ -209,12 +209,18 @@ export class AuthService<T extends IUser> extends AuthEngine {
 
         const [accessToken, refreshToken] = this.rotateToken(req, {
           id: user._id,
-          role: user.role ?? 'buyer',
+          role: user.role,
           remember,
         });
 
         res.cookie(...this.createAccessCookie(accessToken, remember));
         res.cookie(...this.createRefreshCookie(refreshToken, remember));
+
+        res.once('finish', () => {
+          this.storeSession(req, this.model, { user, accessToken }).catch(
+            (err) => console.error('Failed to store session:', err)
+          );
+        });
 
         try {
           if (redirect) {
@@ -229,6 +235,9 @@ export class AuthService<T extends IUser> extends AuthEngine {
             });
           }
         } catch (error) {
+          if (!res.headersSent) {
+            this.clearAllCookies(res);
+          }
           next(error);
         }
       }
