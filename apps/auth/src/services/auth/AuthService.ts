@@ -242,4 +242,21 @@ export class AuthService<T extends IUser> extends AuthEngine {
         }
       }
     );
+
+  // ================== Manage user information ==================
+  public getProfile = catchAsync(
+    async (req: Request, res: Response): Promise<void> => {
+      // User is already attached to request via auth middleware
+      const user = req.self;
+
+      // Consider returning only necessary profile data
+      res.status(HttpStatusCode.OK).json({
+        status: Status.SUCCESS,
+        message: 'Profile retrieved successfully',
+        data: {
+          user,
+        },
+      });
+    }
+  );
 }
