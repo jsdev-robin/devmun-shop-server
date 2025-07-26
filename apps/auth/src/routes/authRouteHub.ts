@@ -42,12 +42,31 @@ router.post(
   authControllerHub.createSession()
 );
 
+router.post('/refresh-token', authControllerHub.refreshToken);
+
 router.use(
   authGuard.validateToken,
   authGuard.requireAuth,
   authGuard.restrictTo('seller', 'admin')
 );
 
+router.post('/signout', authControllerHub.signout);
+router.post(
+  '/sessions/:token/revoke',
+  authSchema.signoutSession,
+  runSchema,
+  authControllerHub.signoutSession
+);
+
+router.post(
+  '/sessions/revoke-all',
+  rateLimiter({
+    max: 5,
+    message:
+      'You’ve made too many requests to revoke all sessions. Please wait 15 minutes and try again.',
+  }),
+  authControllerHub.signoutAllSession
+);
 // // ================== Manage user information ==================
 router.route('/me').get(authControllerHub.getProfile);
 
