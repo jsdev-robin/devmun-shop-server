@@ -5,6 +5,7 @@ import {
   Model,
   Schema,
 } from 'mongoose';
+import { SessionSchema } from './schemas/sessionSchema.js';
 import { IUser } from './types/user.js';
 
 export const getUserModel = (modelName = 'User'): Model<IUser> => {
@@ -32,6 +33,10 @@ export const getUserModel = (modelName = 'User'): Model<IUser> => {
         type: String,
         enum: ['buyer', 'seller', 'admin', 'moderator'],
         default: 'buyer',
+      },
+      sessions: {
+        type: [SessionSchema],
+        select: false,
       },
       verified: {
         type: Boolean,

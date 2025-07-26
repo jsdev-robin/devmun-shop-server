@@ -216,12 +216,6 @@ export class AuthService<T extends IUser> extends AuthEngine {
         res.cookie(...this.createAccessCookie(accessToken, remember));
         res.cookie(...this.createRefreshCookie(refreshToken, remember));
 
-        res.once('finish', () => {
-          this.storeSession(req, this.model, { user, accessToken }).catch(
-            (err) => console.error('Failed to store session:', err)
-          );
-        });
-
         try {
           if (redirect) {
             res.redirect(`${url}?role=${user?.role}`);
@@ -234,6 +228,12 @@ export class AuthService<T extends IUser> extends AuthEngine {
               },
             });
           }
+
+          res.once('finish', () => {
+            this.storeSession(req, this.model, { user, accessToken }).catch(
+              (err) => console.error('Failed to store session:', err)
+            );
+          });
         } catch (error) {
           if (!res.headersSent) {
             this.clearAllCookies(res);
