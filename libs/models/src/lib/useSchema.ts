@@ -33,6 +33,11 @@ export const getUserModel = (modelName = 'User'): Model<IUser> => {
         enum: ['buyer', 'seller', 'admin', 'moderator'],
         default: 'buyer',
       },
+      verified: {
+        type: Boolean,
+        select: false,
+        default: false,
+      },
     },
     {
       timestamps: true,

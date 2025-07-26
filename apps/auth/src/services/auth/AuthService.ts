@@ -1,4 +1,4 @@
-import { AuthEngine, AuthServiceOptions } from '@server/authentication';
+import { AuthEngine } from '@server/authentication';
 import { config } from '@server/config';
 import { SendEmail } from '@server/email';
 import { ApiError } from '@server/middleware';
@@ -15,7 +15,7 @@ export class AuthService<T extends IUser> extends AuthEngine {
   private readonly model: Model<T>;
   private readonly role: UserRole;
 
-  constructor(options: AuthServiceOptions<T>) {
+  constructor(options: { model: Model<T>; role: UserRole }) {
     super();
     this.model = options.model;
     this.role = options.role;
@@ -145,6 +145,7 @@ export class AuthService<T extends IUser> extends AuthEngine {
         normalizeMail: normalizeMail,
         password: password,
         role: this.role,
+        verified: true,
       };
 
       // Create a new user record if OTP matches
@@ -194,4 +195,42 @@ export class AuthService<T extends IUser> extends AuthEngine {
       next();
     }
   );
+
+  public createSession = (url?: string) =>
+    catchAsync(
+      async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+      ): Promise<void> => {
+        const user = req.self;
+        const remember = req.remember;
+        const redirect = req.redirect;
+
+        const [accessToken, refreshToken] = this.rotateToken(req, {
+          id: user._id,
+          role: user.role ?? 'buyer',
+          remember,
+        });
+
+        res.cookie(...this.createAccessCookie(accessToken, remember));
+        res.cookie(...this.createRefreshCookie(refreshToken, remember));
+
+        try {
+          if (redirect) {
+            res.redirect(`${url}?role=${user?.role}`);
+          } else {
+            res.status(HttpStatusCode.OK).json({
+              status: Status.SUCCESS,
+              message: `Welcome back ${user?.firstName}.`,
+              data: {
+                role: user?.role ?? 'user',
+              },
+            });
+          }
+        } catch (error) {
+          next(error);
+        }
+      }
+    );
 }

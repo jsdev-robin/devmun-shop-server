@@ -29,4 +29,17 @@ router.post(
   authControllerHub.verifyEmail
 );
 
+router.post(
+  '/signin',
+  rateLimiter({
+    max: 500,
+    message:
+      'Too many sign-in attempts. Please wait 15 minutes before trying again.',
+  }),
+  authSchema.signin,
+  runSchema,
+  authControllerHub.signin,
+  authControllerHub.createSession()
+);
+
 export default router;
