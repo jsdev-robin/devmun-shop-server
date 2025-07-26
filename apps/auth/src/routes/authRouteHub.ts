@@ -1,6 +1,6 @@
 import { rateLimiter, runSchema } from '@server/middleware';
 import express from 'express';
-import authControllerHub from '../controllers/authControllerHub';
+import { authControllerHub, authGuard } from '../controllers/authControllerHub';
 import { authSchema } from '../middlewares/validations/auth/authSchema';
 
 const router = express.Router();
@@ -41,5 +41,14 @@ router.post(
   authControllerHub.signin,
   authControllerHub.createSession()
 );
+
+router.use(
+  authGuard.validateToken,
+  authGuard.requireAuth,
+  authGuard.restrictTo('seller', 'admin')
+);
+
+// // ================== Manage user information ==================
+router.route('/me').get(authControllerHub.getProfile);
 
 export default router;
