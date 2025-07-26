@@ -195,6 +195,83 @@ export class AuthEngine extends TokenService {
     }
   };
 
+  protected removeASession = async <T extends IUser>(
+    res: Response,
+    Model: Model<T>,
+    payload: {
+      id: string;
+      token: string;
+    }
+  ): Promise<void> => {
+    try {
+      const { id, token } = payload;
+
+      await Promise.all([
+        // Redis session removal
+        (async () => {
+          const p = nodeClient.multi();
+          p.SREM(`${id}:session`, token);
+          const [rem] = await p.exec();
+
+          // Ensure the token was actually removed
+          if (Number(rem) !== 1) {
+            throw new Error('Token not found in session set.');
+          }
+        })(),
+
+        // DB session token status update
+        await Model.findByIdAndUpdate(
+          id,
+          {
+            $set: {
+              'sessions.$[elem].status': false,
+            },
+          },
+          {
+            arrayFilters: [{ 'elem.token': token }],
+            new: true,
+          }
+        ).exec(),
+      ]);
+
+      // Clear cookies only after both Redis and DB succeed
+      this.clearAllCookies(res);
+    } catch {
+      throw new ApiError(
+        'Failed to remove session. Please try again later.',
+        HttpStatusCode.INTERNAL_SERVER_ERROR
+      );
+    }
+  };
+
+  protected removeAllSessions = async <T extends IUser>(
+    Model: Model<T>,
+    payload: {
+      id: string;
+    }
+  ): Promise<void> => {
+    try {
+      const { id } = payload;
+      await Promise.all([
+        // Clear all Redis session and user cache
+        (async () => {
+          const p = nodeClient.multi();
+          p.DEL(`${id}:session`);
+          p.DEL(`${id}`);
+          await p.exec();
+        })(),
+
+        // Unset all sessionToken entries from database
+        Model.updateOne({ _id: id }, { $unset: { sessions: '' } }).exec(),
+      ]);
+    } catch {
+      throw new ApiError(
+        'Failed to remove all sessions.',
+        HttpStatusCode.INTERNAL_SERVER_ERROR
+      );
+    }
+  };
+
   protected sessionUnauthorized = (res: Response, next: NextFunction) => {
     this.clearAllCookies(res);
     return next(
