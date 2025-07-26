@@ -1,5 +1,6 @@
 import { config, nodeClient } from '@server/config';
 import { ApiError } from '@server/middleware';
+import { IUser } from '@server/models';
 import { Crypto } from '@server/security';
 import { HttpStatusCode } from '@server/utils';
 import { randomInt } from 'crypto';
@@ -146,6 +147,49 @@ export class AuthEngine extends TokenService {
     } catch {
       throw new ApiError(
         'Failed to store session',
+        HttpStatusCode.INTERNAL_SERVER_ERROR
+      );
+    }
+  };
+
+  protected rotateSession = async <T extends IUser>(
+    Model: Model<T>,
+    payload: {
+      id: string;
+      oldToken: string;
+      newToken: string;
+    }
+  ): Promise<void> => {
+    try {
+      const { id, oldToken, newToken } = payload;
+      const hashedToken = Crypto.hmac(String(newToken));
+      await Promise.all([
+        // Redis: replace old token with new one
+        (async () => {
+          const p = nodeClient.multi();
+          p.SREM(`${id}:session`, String(oldToken));
+          p.SADD(`${id}:session`, hashedToken);
+          p.EXPIRE(`${id}:session`, REFRESH_TTL * 24 * 60 * 60);
+          await p.exec();
+        })(),
+
+        // DB: update token inside sessionToken array
+        Model.findByIdAndUpdate(
+          id,
+          {
+            $set: {
+              'sessions.$[elem].token': hashedToken,
+            },
+          },
+          {
+            arrayFilters: [{ 'elem.token': oldToken }],
+            new: true,
+          }
+        ).exec(),
+      ]);
+    } catch {
+      throw new ApiError(
+        'Failed to rotate session. Please try again later.',
         HttpStatusCode.INTERNAL_SERVER_ERROR
       );
     }

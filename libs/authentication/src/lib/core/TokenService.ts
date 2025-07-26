@@ -6,7 +6,6 @@ import { HttpStatusCode } from '@server/utils';
 import { timingSafeEqual } from 'crypto';
 import { Request } from 'express';
 import jwt from 'jsonwebtoken';
-import mongoose from 'mongoose';
 import { ACCESS_TTL, CookieService, REFRESH_TTL } from './CookieService.js';
 
 export interface TokenSignature {
@@ -20,10 +19,7 @@ export interface TokenSignature {
 }
 
 export class TokenService extends CookieService {
-  private tokenSignature(
-    req: Request,
-    user: { id: mongoose.ObjectId; role: UserRole }
-  ) {
+  private tokenSignature(req: Request, user: { id: string; role: UserRole }) {
     return {
       ip: Crypto.hmac(String(req.ip)),
       id: user.id,
@@ -56,7 +52,7 @@ export class TokenService extends CookieService {
 
   protected rotateToken = (
     req: Request,
-    payload: { id: mongoose.ObjectId; role: UserRole; remember: boolean }
+    payload: { id: string; role: UserRole; remember: boolean }
   ): [string, string] => {
     try {
       const { id, role, remember } = payload;

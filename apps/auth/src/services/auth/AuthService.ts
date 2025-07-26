@@ -1,4 +1,4 @@
-import { AuthEngine } from '@server/authentication';
+import { AuthEngine, TokenSignature } from '@server/authentication';
 import { config } from '@server/config';
 import { SendEmail } from '@server/email';
 import { ApiError } from '@server/middleware';
@@ -239,6 +239,54 @@ export class AuthService<T extends IUser> extends AuthEngine {
         }
       }
     );
+
+  public refreshToken = catchAsync(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      // Get refresh token from cookies
+      const refreshCookie = req.cookies[this.getRefreshCookieConfig().name];
+
+      // Exit early if no refresh token is found
+      if (!refreshCookie) {
+        return this.sessionUnauthorized(res, next);
+      }
+
+      // Verify and decode the refresh token payload
+      const decoded = jwt.verify(
+        refreshCookie,
+        config.REFRESH_TOKEN
+      ) as TokenSignature;
+
+      // Rotate access and refresh tokens
+      const [accessToken, refreshToken] = this.rotateToken(req, {
+        id: decoded.id,
+        role: decoded.role,
+        remember: decoded.remember,
+      });
+
+      // Set newly issued tokens in cookies
+      res.cookie(...this.createAccessCookie(accessToken, decoded.remember));
+      res.cookie(...this.createRefreshCookie(refreshToken, decoded.remember));
+
+      // Respond with success message
+      res.status(200).json({
+        status: Status.SUCCESS,
+        message: 'Token refreshed successfully.',
+      });
+
+      // Hash new access token for Redis and DB session comparison
+      const oldToken = decoded.token;
+      const newToken = accessToken;
+
+      // Rotate session in Redis: remove old and add new token
+      res.once('finish', () => {
+        this.rotateSession(this.model, {
+          id: decoded.id,
+          oldToken,
+          newToken,
+        }).catch((err) => console.error('Failed to store session:', err));
+      });
+    }
+  );
 
   // ================== Manage user information ==================
   public getProfile = catchAsync(
