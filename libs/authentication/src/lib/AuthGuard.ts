@@ -1,6 +1,6 @@
 import { config, nodeClient } from '@server/config';
 import { ApiError } from '@server/middleware';
-import { IUser } from '@server/models';
+import { IUser, UserRole } from '@server/models';
 import { Crypto } from '@server/security';
 import { catchAsync, HttpStatusCode } from '@server/utils';
 import { NextFunction, Request, Response } from 'express';
@@ -92,4 +92,20 @@ export class AuthGuard<T extends IUser> extends AuthEngine {
       next();
     }
   );
+
+  public restrictTo = (...roles: UserRole[]) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+      const user = req.self;
+      if (!user?.role || !roles.includes(user.role)) {
+        const error = new ApiError(
+          'You do not have permission to perform this action',
+          HttpStatusCode.FORBIDDEN
+        );
+        next(error);
+        return;
+      }
+
+      next();
+    };
+  };
 }
