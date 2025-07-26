@@ -12,8 +12,8 @@ import { TokenSignature } from './core/TokenService.js';
 export class AuthGuard<T extends IUser> extends AuthEngine {
   private readonly model: Model<T>;
 
-  constructor(options: { model: Model<T> }) {
-    super();
+  constructor(options: { model: Model<T>; role: UserRole }) {
+    super(options.role);
     this.model = options.model;
   }
 

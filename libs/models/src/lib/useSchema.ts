@@ -6,9 +6,12 @@ import {
   Schema,
 } from 'mongoose';
 import { SessionSchema } from './schemas/sessionSchema.js';
-import { IUser } from './types/user.js';
+import { IUser, UserRole } from './types/user.js';
 
-export const getUserModel = (modelName = 'User'): Model<IUser> => {
+export const getUserModel = (
+  modelName = 'User',
+  role?: UserRole
+): Model<IUser> => {
   const UserSchema = new Schema<IUser>(
     {
       firstName: { type: String, trim: true },
@@ -32,7 +35,7 @@ export const getUserModel = (modelName = 'User'): Model<IUser> => {
       role: {
         type: String,
         enum: ['buyer', 'seller', 'admin', 'moderator'],
-        default: 'buyer',
+        default: role ?? 'buyer',
       },
       sessions: {
         type: [SessionSchema],
@@ -51,12 +54,10 @@ export const getUserModel = (modelName = 'User'): Model<IUser> => {
     }
   );
 
-  // Virtual: fullName
   UserSchema.virtual('fullName').get(function (this: IUser) {
     return `${this.firstName ?? ''} ${this.lastName ?? ''}`.trim();
   });
 
-  // Pre-save: hash password
   UserSchema.pre(
     'save',
     async function (next: CallbackWithoutResultAndOptionalError) {
@@ -70,7 +71,6 @@ export const getUserModel = (modelName = 'User'): Model<IUser> => {
     }
   );
 
-  // Method: isPasswordValid
   UserSchema.methods.isPasswordValid = async function (
     this: IUser,
     candidatePassword: string
@@ -81,5 +81,5 @@ export const getUserModel = (modelName = 'User'): Model<IUser> => {
   return model<IUser>(modelName, UserSchema);
 };
 
-export const User = getUserModel('User');
-export const Seller = getUserModel('Seller');
+export const User = getUserModel('User', 'buyer');
+export const Seller = getUserModel('Seller', 'seller');

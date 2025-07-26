@@ -1,5 +1,6 @@
 import { config } from '@server/config';
 import { ApiError } from '@server/middleware';
+import { UserRole } from '@server/models';
 import { HttpStatusCode } from '@server/utils';
 import { CookieOptions, Response } from 'express';
 
@@ -37,13 +38,27 @@ export const COOKIE_OPTIONS: CookieOptions = {
   domain: config.ISPRODUCTION ? '.devmun.xyz' : 'localhost',
 };
 
-export const ACCESS_COOKIE_NAME = '__secure-gk_9sLrTf2sa';
-export const REFRESH_COOKIE_NAME = '__host-qX_sr2pR8dK';
+export const SELLER_ACCESS_COOKIE_NAME = '__secure-sk_9sLrTf2sa';
+export const SELLER_REFRESH_COOKIE_NAME = '__host-sX_sr2pR8dK';
+
+export const BUYER_ACCESS_COOKIE_NAME = '__secure-bk_9sLrTf2sa';
+export const BUYER_REFRESH_COOKIE_NAME = '__host-bX_sr2pR8dK';
 
 export class CookieService {
+  protected readonly role: UserRole;
+
+  constructor(role: UserRole) {
+    this.role = role;
+  }
+
   protected getAccessCookieConfig = () => {
     return {
-      name: ACCESS_COOKIE_NAME,
+      name:
+        this.role === 'seller'
+          ? SELLER_ACCESS_COOKIE_NAME
+          : this.role === 'buyer'
+          ? BUYER_ACCESS_COOKIE_NAME
+          : '',
       expires: ACCESS_COOKIE_EXP,
       options: COOKIE_OPTIONS,
     };
@@ -51,7 +66,12 @@ export class CookieService {
 
   protected getRefreshCookieConfig = () => {
     return {
-      name: REFRESH_COOKIE_NAME,
+      name:
+        this.role === 'seller'
+          ? SELLER_REFRESH_COOKIE_NAME
+          : this.role === 'buyer'
+          ? BUYER_REFRESH_COOKIE_NAME
+          : '',
       expires: REFRESH_COOKIE_EXP,
       options: COOKIE_OPTIONS,
     };
@@ -65,7 +85,7 @@ export class CookieService {
       const base = this.getAccessCookieConfig();
 
       const options = remember
-        ? { ...base.options, ...base.expires }
+        ? { ...base.options, ...base.expires, ...ENABLE_SIGNATURE }
         : base.options;
 
       return [base.name, payload, options];

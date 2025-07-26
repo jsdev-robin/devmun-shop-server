@@ -13,12 +13,10 @@ import { ISignin, ISignup, IVerifyEmail } from './types/authTypes';
 
 export class AuthService<T extends IUser> extends AuthEngine {
   private readonly model: Model<T>;
-  private readonly role: UserRole;
 
   constructor(options: { model: Model<T>; role: UserRole }) {
-    super();
+    super(options.role);
     this.model = options.model;
-    this.role = options.role;
   }
 
   public signup = catchAsync(
@@ -144,7 +142,6 @@ export class AuthService<T extends IUser> extends AuthEngine {
         email: email,
         normalizeMail: normalizeMail,
         password: password,
-        role: this.role,
         verified: true,
       };
 
